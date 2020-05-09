@@ -99,7 +99,7 @@ class resnext101_32x8d(BasicModule):
 
 
 if __name__ == '__main__':
-    net = registry_model.get(config.model['name'])()
+    net = registry_model.get('efficientnet')()
     x = torch.randn(1, 3, 224, 224)
     y = net(x)
     print(y.shape)

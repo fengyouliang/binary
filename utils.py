@@ -42,6 +42,9 @@ def check_move_file():
 
 def get_FRN_metric(y_true, y_score):
     threshold = y_score[y_true == 0].min(axis=0)[0]
+    # threshold = 0.30083063
+    # threshold = 0.5
+
     true_ok_ng_score = y_score[y_true == 1][:, 0]
     not_ok = true_ok_ng_score > threshold
 

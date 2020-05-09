@@ -77,6 +77,9 @@ def final_test(model):
 
     ng_image_name = np.array(test_data.neg_images, dtype=str)
 
+    all_image_name = test_data.pos_images + test_data.neg_images
+    all_image_name = np.array(all_image_name, dtype=str)
+
     for x, y in tqdm(test_loader):
         x, y = x.cuda(), y.cuda()
 
