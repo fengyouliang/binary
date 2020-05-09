@@ -54,7 +54,7 @@ class Test_Dataset(Dataset):
 
 
 def load_model(pth):
-    model = registry_model.get(config.model)()
+    model = registry_model.get(config.model['name'])()
     model.load(pth)
     model = model.cuda(device=config.device_ids[0])
     return model
@@ -147,11 +147,6 @@ def final_test(model):
 
 
 if __name__ == '__main__':
-    for pth in os.listdir('best_ap_model'):
-        # pth = '26_acc_0.9051_ok_ap_0.9595_ng_ap_0.9976_mAP_0.97855.pth'
-        model = load_model(f'best_ap_model/{pth}')
-        ret_dict = final_test(model)
-        print(ret_dict)
-        print(pth)
-        print(ret_dict['confusion_matrix'])
-        print(ret_dict['final_metric_dict'])
+    model = load_model(f'best_ap_model/{config.test_pth}')
+    ret_dict = final_test(model)
+    print(ret_dict)

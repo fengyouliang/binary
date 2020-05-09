@@ -28,7 +28,9 @@ class BasicModule(nn.Module):
         return name
 
     def get_optimizer(self, lr, weight_decay, momentum):
-        return torch.optim.SGD(self.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+        # opt = torch.optim.SGD(self.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+        opt = torch.optim.AdamW(self.parameters())
+        return opt
 
 
 class Flat(nn.Module):

@@ -4,24 +4,14 @@ import math
 import os
 
 import torch
-from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
 import config
 from dataset import MyDataset
+from losses import FocalLoss
 from models.model import registry_model
 from train import trainer
-
-if not os.path.exists('./best_model'):
-    os.makedirs('./best_model')
-if not os.path.exists('./checkpoints'):
-    os.makedirs('./checkpoints')
-
-if not os.path.exists('./best_acc_model'):
-    os.makedirs('./best_acc_model')
-if not os.path.exists('./best_ap_model'):
-    os.makedirs('./best_ap_model')
 
 
 def train_loop():
@@ -31,7 +21,8 @@ def train_loop():
     model = model.cuda(device=config.device_ids[0])
 
     optimizer = model.module.get_optimizer(config.lr, config.weight_decay, config.momentum)
-    criterion = nn.CrossEntropyLoss()
+    # criterion = nn.CrossEntropyLoss()
+    criterion = FocalLoss()
 
     train_data = MyDataset('train')
     val_data = MyDataset('val')
