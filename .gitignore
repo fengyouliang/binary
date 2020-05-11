@@ -1,3 +1,5 @@
 /best_acc_model/
 /best_ap_model/
 /checkpoints/
+/best_FNR_model/
+/vis_bad_case/

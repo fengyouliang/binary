@@ -11,3 +11,5 @@ if not os.path.exists('./best_ap_model'):
     os.makedirs('./best_ap_model')
 if not os.path.exists('./best_FNR_model'):
     os.makedirs('./best_FNR_model')
+if not os.path.exists('./pic'):
+    os.makedirs('./pic')

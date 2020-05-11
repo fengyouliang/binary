@@ -75,10 +75,10 @@ def final_test(model):
     test_data = Test_Dataset()
     test_loader = DataLoader(test_data, batch_size=len(test_data), shuffle=False)
 
-    ng_image_name = np.array(test_data.neg_images, dtype=str)
+    # ng_image_name = np.array(test_data.neg_images, dtype=str)
 
-    all_image_name = test_data.pos_images + test_data.neg_images
-    all_image_name = np.array(all_image_name, dtype=str)
+    image_name = test_data.pos_images + test_data.neg_images
+    all_image_name = np.array(image_name, dtype=str)
 
     for x, y in tqdm(test_loader):
         x, y = x.cuda(), y.cuda()
@@ -105,16 +105,38 @@ def final_test(model):
     final_metric_dict = utils.get_FRN_metric(y_true, y_score)
 
     # 求真实类别为NG最低K个的score
-    true_ok_length = len(y_true[y_true == 1])
-    true_ng_ng_score = y_score[true_ok_length:, 0]
-    idx = true_ng_ng_score.argsort()
-    true_ng_ng_score = true_ng_ng_score[idx]
-    ng_image_name = ng_image_name[idx]
+    # true_ok_length = len(y_true[y_true == 1])
+    # true_ng_ng_score = y_score[true_ok_length:, 0]
+    # idx = true_ng_ng_score.argsort()
+    # true_ng_ng_score = true_ng_ng_score[idx]
+    # ng_image_name = ng_image_name[idx]
 
-    vis_ng_score = {
-        'idx': idx,
-        'true_ng_ng_score': true_ng_ng_score,
-        'ng_image_name': ng_image_name,
+    # vis_ng_score = {
+    #     'idx': idx,
+    #     'true_ng_ng_score': true_ng_ng_score,
+    #     'ng_image_name': ng_image_name,
+    # }
+
+    # 按score 排序，分NG， OK
+    ng_score = y_score[:, 0]
+    ok_score = y_score[:, 1]
+    ng_score = ng_score[y_true == 0]
+    ok_score = ok_score[y_true == 1]
+    ng_name = all_image_name[y_true == 0]
+    ok_name = all_image_name[y_true == 1]
+
+    ng_idx = ng_score.argsort()
+    ok_idx = ok_score.argsort()
+    ng_score = ng_score[ng_idx]
+    ok_score = ok_score[ok_idx]
+    ng_name = ng_name[ng_idx]
+    ok_name = ok_name[ok_idx]
+
+    vis_bad_case = {
+        'ng_score': ng_score,
+        'ok_score': ok_score,
+        'ng_name': ng_name,
+        'ok_name': ok_name,
     }
 
     mulit_class_ap = ClassifierEvalMulticlass.compute_ap(y_true, y_score)
@@ -122,14 +144,14 @@ def final_test(model):
     ok_y_score = y_score[:, 1]
     ok_val_ap = ClassifierEvalBinary.compute_ap(y_true, ok_y_score)
     ok_p_at_r = ClassifierEvalBinary.compute_p_at_r(y_true, ok_y_score, 1)
-    # ClassifierEvalBinary.draw_pr_curve(y_true, ok_y_score, cls_id=1, output_path='./ok_pr_curve.png')
+    ClassifierEvalBinary.draw_pr_curve(y_true, ok_y_score, cls_id=1, output_path='./pic/ok_pr_curve.png')
 
     ng_y_true = np.array(y_true).astype("bool")
     ng_y_true = (1 - ng_y_true).astype(np.int)
     ng_y_score = y_score[:, 0]
     ng_val_ap = ClassifierEvalBinary.compute_ap(ng_y_true, ng_y_score)
     ng_p_at_r = ClassifierEvalBinary.compute_p_at_r(ng_y_true, ng_y_score, 1)
-    # ClassifierEvalBinary.draw_pr_curve(ng_y_true, ng_y_score, cls_id=0, output_path='./ng_pr_curve.png')
+    ClassifierEvalBinary.draw_pr_curve(ng_y_true, ng_y_score, cls_id=0, output_path='./pic/ng_pr_curve.png')
 
     mAP = (ok_val_ap + ng_val_ap) / 2
 
@@ -143,13 +165,53 @@ def final_test(model):
         'ng_p_at_r': ng_p_at_r,
         'confusion_matrix': confusion_matrix,
         'final_metric_dict': final_metric_dict,
-        'vis_ng_score': vis_ng_score
+        # 'vis_ng_score': vis_ng_score,
+        'vis_bad_case': vis_bad_case
     }
 
     return ret_dict
 
 
+def vis_bad_case(vis_bad_case, fold_idx):
+    import cv2 as cv
+    import shutil
+
+    # ng_score = vis_bad_case['ng_score']
+    # ok_score = vis_bad_case['ok_score']
+    # ng_name = vis_bad_case['ng_name']
+    # ok_name = vis_bad_case['ok_name']
+
+    v = {
+        'ok': {
+            'score': vis_bad_case['ok_score'],
+            'name': vis_bad_case['ok_name'],
+        },
+        'ng': {
+            'score': vis_bad_case['ng_score'],
+            'name': vis_bad_case['ng_name'],
+        }
+    }
+    for mode in v.keys():
+        output_path = f'./vis_bad_case/fold_{fold_idx}/{mode}'
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+
+    for mode in v.keys():
+        score, name = v[mode]['score'], v[mode]['name']
+        length = len(score[score < 0.5])
+
+        for i in range(length):
+            image = cv.imread(name[i])
+            output_name = name[i].split('/')[-1].split('.')[0]
+            cv.imwrite(f'./vis_bad_case/fold_{fold_idx}/{mode}/{score[i]:6f}_{output_name}.jpg', image)
+
+
 if __name__ == '__main__':
     model = load_model(f'best_ap_model/{config.test_pth}')
+
     ret_dict = final_test(model)
+    torch.cuda.empty_cache()
+
     print(ret_dict)
+    vis_bad_case(ret_dict["vis_bad_case"], config.test_path[-1])

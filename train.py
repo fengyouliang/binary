@@ -15,7 +15,7 @@ def trainer(model, optimizer, criterion, train_loader, val_loader, tqdm_length):
     best_ap = 0
     best_FNR = 0
 
-    for epoch in range(max_epoch):
+    for epoch in range(config.max_epoch):
 
         utils.adjust_lr(optimizer, epoch)
 

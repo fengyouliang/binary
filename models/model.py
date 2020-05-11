@@ -67,9 +67,15 @@ class efficientnet(BasicModule):
         super(efficientnet, self).__init__()
         self.model_name = 'EfficientNet'
 
+        linear_length = {
+            'b1': 1280,
+            'b3': 1536,
+            'b7': 2560,
+        }
+
         model = EfficientNet.from_pretrained(net_type)
         self.features = model.extract_features
-        self.classifer = nn.Linear(1280, num_classes)
+        self.classifer = nn.Linear(linear_length[net_type[-2:]], num_classes)
 
     def forward(self, x):
         x = self.features(x)
@@ -99,10 +105,12 @@ class resnext101_32x8d(BasicModule):
 
 
 if __name__ == '__main__':
-    net = registry_model.get('efficientnet')()
-    x = torch.randn(1, 3, 224, 224)
-    y = net(x)
-    print(y.shape)
-    # from pretrainedmodels.models import resnext101_64x4d
-    # net = resnext101_64x4d(num_classes=1000, pretrained='imagenet')
-    # print(net)
+    # net = registry_model.get('efficientnet')('efficientnet-b7')
+    # x = torch.randn(1, 3, 224, 224)
+    # y = net(x)
+    # print(y.shape)
+
+    from pretrainedmodels.models import pnasnet5large as premodel
+
+    net = premodel(num_classes=1000, pretrained='imagenet')
+    print(net.last_linear)
