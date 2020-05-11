@@ -4,12 +4,14 @@ import math
 import os
 
 import torch
+from torch import nn as nn
+from torch.optim import lr_scheduler
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
 import config
 from dataset import MyDataset
-from losses import registry_loss, FocalLoss
+from losses import FocalLoss
 from models.model import registry_model
 from train import trainer
 
@@ -21,8 +23,11 @@ def train_loop():
     model = model.cuda(device=config.device_ids[0])
 
     optimizer = model.module.get_optimizer(config.lr, config.weight_decay, config.momentum)
+    # scheduler = lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=1, T_mult=config.max_epoch)
+
     # criterion = registry_loss.get(config.criterion)()
-    criterion = FocalLoss()
+    # criterion = FocalLoss()
+    criterion = nn.CrossEntropyLoss()
 
     train_data = MyDataset('train')
     val_data = MyDataset('val')
@@ -39,7 +44,7 @@ def train_loop():
     train_loader = DataLoader(train_data, batch_size=config.batch_size, sampler=sampler)
     val_loader = DataLoader(val_data, batch_size=config.batch_size, shuffle=False)
 
-    trainer(model, optimizer, criterion, train_loader, val_loader, tqdm_length)
+    trainer(model, optimizer, criterion, None, train_loader, val_loader, tqdm_length)
 
 
 if __name__ == '__main__':

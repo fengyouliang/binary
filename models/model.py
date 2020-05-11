@@ -89,9 +89,7 @@ class resnext101_32x8d(BasicModule):
     def __init__(self, num_classes=2):
         super(resnext101_32x8d, self).__init__()
         self.model_name = 'resnext101_32x8d'
-
         net = torchvision.models.resnext101_32x8d(pretrained=config.is_pretrained, num_classes=1000)
-
         self.features = nn.Sequential(
             *list(net.children())[:-1],
         )

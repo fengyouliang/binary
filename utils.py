@@ -20,9 +20,9 @@ def adjust_lr(optimizer, iter, gamma=0.5, warm_up=3):
         param_group['lr'] = new_lr
 
 
-def movefile(index, mode='ok'):
-    in_file_path = f'/mnt/tmp/feng/second_final_data/final_data_fold_{index}/train/{mode}'
-    out_file_path = f'/mnt/tmp/feng/second_final_data/final_data_fold_{index}/val/{mode}'
+def movefile(index, mode):
+    in_file_path = f'/mnt/tmp/feng/kuozhankuang/fold_{index}/train/{mode}'
+    out_file_path = f'/mnt/tmp/feng/kuozhankuang/fold_{index}/val/{mode}'
     if not os.path.exists(out_file_path):
         os.makedirs(out_file_path)
     for file in os.listdir(in_file_path):
@@ -33,10 +33,10 @@ def movefile(index, mode='ok'):
 
 
 def check_move_file():
-    for index in [1, 2, 3]:
+    for index in [1]:
         for mode in ['ok', 'ng']:
-            in_file_path = f'/mnt/tmp/feng/second_final_data/final_data_fold_{index}/train/{mode}'
-            out_file_path = f'/mnt/tmp/feng/second_final_data/final_data_fold_{index}/val/{mode}'
+            in_file_path = f'/mnt/tmp/feng/kuozhankuang/fold_{index}/train/{mode}'
+            out_file_path = f'/mnt/tmp/feng/kuozhankuang/fold_{index}/val/{mode}'
             in_length = len(os.listdir(in_file_path))
             out_length = len(os.listdir(out_file_path))
             print(in_length / (in_length + out_length))

@@ -1,9 +1,7 @@
-import torch
+import matplotlib.pyplot as plt
 import torch.optim as optim
 from torch.optim import lr_scheduler
 from torchvision.models import AlexNet
-import matplotlib.pyplot as plt
-
 
 model = AlexNet(num_classes=2)
 optimizer = optim.SGD(params=model.parameters(), lr=1)

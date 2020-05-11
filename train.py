@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from sklearn import metrics
 from torch import nn
 from tqdm import tqdm
 
@@ -8,7 +9,7 @@ import utils
 from config import *
 
 
-def trainer(model, optimizer, criterion, train_loader, val_loader, tqdm_length):
+def trainer(model, optimizer, criterion, scheduler, train_loader, val_loader, tqdm_length):
     best_acc = best_val_acc
     best_ok_ap = 0
     best_ng_ap = 0
@@ -33,19 +34,22 @@ def trainer(model, optimizer, criterion, train_loader, val_loader, tqdm_length):
             bar.set_description(
                 f'{epoch}-{ii} loss:{loss.item():.4f} lr:{optimizer.state_dict()["param_groups"][0]["lr"]:.10f}')
 
+        # scheduler.step()
+
         model.module.save()
 
         val_accuracy, y_true, y_score = val(model, val_loader)
-
+        # confusion matrix
+        confusion_matrix = metrics.confusion_matrix(y_true, np.argmax(y_score, 1))
         # AP
         ok_val_ap, ng_val_ap, mAP = utils.get_AP_metric(y_true, y_score)
-
         # FNR
         final_metric_dict = utils.get_FRN_metric(y_true, y_score)
 
         print(f'Acc: {val_accuracy:.2f}\t OK_AP：{ok_val_ap:.2f}\t NG_AP: {ng_val_ap:.2f}\t mAP: {mAP:.2f}')
         print(f'BEST Acc: {best_acc:.2f}\t OK_AP: {best_ok_ap:.2f}\t NG_AP: {best_ng_ap:.2f}\t mAP: {best_ap:.2f}')
         print(final_metric_dict)
+        print(confusion_matrix)
 
         if final_metric_dict['FNR'] > best_FNR:
             best_FNR = final_metric_dict['FNR']
