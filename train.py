@@ -17,7 +17,7 @@ def trainer(model, optimizer, criterion, train_loader, val_loader, tqdm_length):
 
     for epoch in range(config.max_epoch):
 
-        utils.adjust_lr(optimizer, epoch)
+        # utils.adjust_lr(optimizer, epoch)
 
         bar = tqdm(enumerate(train_loader), total=tqdm_length)
         for ii, (data, label) in bar:

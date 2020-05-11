@@ -8,14 +8,16 @@ import config
 from MetricEval import ClassifierEvalBinary
 
 
-def adjust_lr(op, iter, gamma=0.5, warm_up=3):
+def adjust_lr(optimizer, iter, gamma=0.5, warm_up=3):
+    print(iter)
     original_lr = config.lr
     if iter < warm_up:
         new_lr = original_lr * (iter + 1) / warm_up
     else:
         new_lr = original_lr * gamma * (1 + math.cos(iter / config.max_epoch * math.pi))
-    for para in op.param_groups:
-        para['lr'] = new_lr
+
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = new_lr
 
 
 def movefile(index, mode='ok'):
@@ -42,8 +44,6 @@ def check_move_file():
 
 def get_FRN_metric(y_true, y_score):
     threshold = y_score[y_true == 0].min(axis=0)[0]
-    # threshold = 0.30083063
-    # threshold = 0.5
 
     true_ok_ng_score = y_score[y_true == 1][:, 0]
     not_ok = true_ok_ng_score > threshold

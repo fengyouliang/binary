@@ -56,7 +56,7 @@ class mobilenet(BasicModule):
 
     def forward(self, x):
         x = self.features(x)
-        x = nn.functional.adaptive_max_pool2d(x, 1).reshape(x.shape[0], -1)
+        x = nn.functional.adaptive_avg_pool2d(x, 1).reshape(x.shape[0], -1)
         x = self.classifer(x)
         return x
 
@@ -99,7 +99,7 @@ class resnext101_32x8d(BasicModule):
 
     def forward(self, x):
         x = self.features(x)
-        x = nn.functional.adaptive_max_pool2d(x, 1).reshape(x.shape[0], -1)
+        x = nn.functional.adaptive_avg_pool2d(x, 1).reshape(x.shape[0], -1)
         x = self.classifer(x)
         return x
 

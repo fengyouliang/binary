@@ -9,7 +9,7 @@ from torch.utils.data.sampler import WeightedRandomSampler
 
 import config
 from dataset import MyDataset
-from losses import registry_loss
+from losses import registry_loss, FocalLoss
 from models.model import registry_model
 from train import trainer
 
@@ -21,7 +21,8 @@ def train_loop():
     model = model.cuda(device=config.device_ids[0])
 
     optimizer = model.module.get_optimizer(config.lr, config.weight_decay, config.momentum)
-    criterion = registry_loss.get(config.criterion)()
+    # criterion = registry_loss.get(config.criterion)()
+    criterion = FocalLoss()
 
     train_data = MyDataset('train')
     val_data = MyDataset('val')
