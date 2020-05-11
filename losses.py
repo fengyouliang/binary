@@ -1,11 +1,14 @@
 import torch
-
 import torch.nn as nn
 import torch.nn.functional as F
-
 from torch.autograd import Variable
 
+from register import Registry
 
+registry_loss = Registry('loss')
+
+
+@registry_loss.register()
 class FocalLoss(nn.Module):
 
     def __init__(self, focusing_param=2, balance_param=0.25):
@@ -25,6 +28,16 @@ class FocalLoss(nn.Module):
         balanced_focal_loss = self.balance_param * focal_loss
 
         return balanced_focal_loss
+
+
+@registry_loss.register()
+def crossentropyloss():
+    return nn.CrossEntropyLoss()
+
+
+@registry_loss.register()
+def focalloss():
+    return FocalLoss()
 
 
 def test_focal_loss():

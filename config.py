@@ -31,6 +31,10 @@ lr = 2e-4
 weight_decay = 1e-5
 momentum = 0.9
 
+criterion = 'focalloss'
+# criterion = 'crossentropyloss'
+
+
 max_epoch = 10
 best_val_acc = 0.5
 
