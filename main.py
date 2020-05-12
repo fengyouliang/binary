@@ -23,11 +23,10 @@ def train_loop():
     model = model.cuda(device=config.device_ids[0])
 
     optimizer = model.module.get_optimizer(config.lr, config.weight_decay, config.momentum)
-    # scheduler = lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=1, T_mult=config.max_epoch)
 
     # criterion = registry_loss.get(config.criterion)()
-    # criterion = FocalLoss()
-    criterion = nn.CrossEntropyLoss()
+    criterion = FocalLoss()
+    # criterion = nn.CrossEntropyLoss()
 
     train_data = MyDataset('train')
     val_data = MyDataset('val')

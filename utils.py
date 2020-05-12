@@ -42,6 +42,13 @@ def check_move_file():
             print(in_length / (in_length + out_length))
 
 
+def get_data_count():
+    from config import data_path
+    for index in ['train', 'val', 'test']:
+        for mode in ['ok', 'ng']:
+            count = len(os.listdir(f'{data_path}/{index}/{mode}'))
+            print(index, mode, count)
+
 def get_FRN_metric(y_true, y_score):
     threshold = y_score[y_true == 0].min(axis=0)[0]
 
@@ -76,4 +83,4 @@ def get_AP_metric(y_true, y_score):
 
 
 if __name__ == '__main__':
-    pass
+    get_data_count()
