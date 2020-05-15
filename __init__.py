@@ -13,3 +13,7 @@ if not os.path.exists('./best_FNR_model'):
     os.makedirs('./best_FNR_model')
 if not os.path.exists('./pic'):
     os.makedirs('./pic')
+if not os.path.exists('./log'):
+    os.makedirs('./log')
+if not os.path.exists('./json'):
+    os.makedirs('./json')

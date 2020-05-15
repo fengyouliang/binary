@@ -13,6 +13,7 @@ import config
 import utils
 from MetricEval import ClassifierEvalBinary, ClassifierEvalMulticlass
 from models.model import registry_model
+from my_cam import cam_bad_case
 
 
 class Test_Dataset(Dataset):
@@ -75,8 +76,6 @@ def final_test(model):
     test_data = Test_Dataset()
     test_loader = DataLoader(test_data, batch_size=len(test_data), shuffle=False)
 
-    # ng_image_name = np.array(test_data.neg_images, dtype=str)
-
     image_name = test_data.pos_images + test_data.neg_images
     all_image_name = np.array(image_name, dtype=str)
 
@@ -102,20 +101,8 @@ def final_test(model):
 
     confusion_matrix = metrics.confusion_matrix(y_true, all_pred)
 
-    final_metric_dict = utils.get_FRN_metric(y_true, y_score)
+    final_metric_dict = utils.get_FOR_metric(y_true, y_score)
 
-    # 求真实类别为NG最低K个的score
-    # true_ok_length = len(y_true[y_true == 1])
-    # true_ng_ng_score = y_score[true_ok_length:, 0]
-    # idx = true_ng_ng_score.argsort()
-    # true_ng_ng_score = true_ng_ng_score[idx]
-    # ng_image_name = ng_image_name[idx]
-
-    # vis_ng_score = {
-    #     'idx': idx,
-    #     'true_ng_ng_score': true_ng_ng_score,
-    #     'ng_image_name': ng_image_name,
-    # }
 
     # 按score 排序，分NG， OK
     ng_score = y_score[:, 0]
@@ -208,10 +195,11 @@ def vis_bad_case(vis_bad_case, fold_idx):
 
 
 if __name__ == '__main__':
-    model = load_model(f'best_ap_model/{config.test_pth}')
+    model = load_model(config.test_pth)
 
     ret_dict = final_test(model)
     torch.cuda.empty_cache()
 
     print(ret_dict)
     vis_bad_case(ret_dict["vis_bad_case"], config.test_path[-1])
+    cam_bad_case()

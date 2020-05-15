@@ -4,29 +4,25 @@ import math
 import os
 
 import torch
-from torch import nn as nn
-from torch.optim import lr_scheduler
+from torch.optim import Adam
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
 import config
 from dataset import MyDataset
-from losses import FocalLoss
+from losses import registry_loss
 from models.model import registry_model
 from train import trainer
 
 
 def train_loop():
     model = registry_model.get(config.model['name'])()
-
     model = torch.nn.DataParallel(model, device_ids=config.device_ids)
     model = model.cuda(device=config.device_ids[0])
 
-    optimizer = model.module.get_optimizer(config.lr, config.weight_decay, config.momentum)
-
-    # criterion = registry_loss.get(config.criterion)()
-    criterion = FocalLoss()
-    # criterion = nn.CrossEntropyLoss()
+    # optimizer = SGD(model.parameters(), lr=config.lr, momentum=config.momentum, weight_decay=config.weight_decay)
+    optimizer = Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
+    criterion = registry_loss.get(config.criterion)()
 
     train_data = MyDataset('train')
     val_data = MyDataset('val')

@@ -1,6 +1,3 @@
-import time
-
-import torch
 import torchvision
 from efficientnet_pytorch import EfficientNet
 from torch import nn
@@ -11,38 +8,8 @@ from register import Registry
 registry_model = Registry('model')
 
 
-class BasicModule(nn.Module):
-
-    def __init__(self):
-        super(BasicModule, self).__init__()
-        self.model_name = str(type(self))  # 默认名字
-
-    def load(self, path):
-        self.load_state_dict(torch.load(path))
-
-    def save(self, name=None):
-        if name is None:
-            prefix = './checkpoints/' + self.model_name + '_'
-            name = time.strftime(prefix + '%m%d_%H_%M_%S.pth')
-        torch.save(self.state_dict(), name)
-        return name
-
-    def get_optimizer(self, lr, weight_decay, momentum):
-        opt = torch.optim.SGD(self.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
-        # opt = torch.optim.AdamW(self.parameters())
-        return opt
-
-
-class Flat(nn.Module):
-    def __init__(self):
-        super(Flat, self).__init__()
-
-    def forward(self, x):
-        return x.view(x.size(0), -1)
-
-
 @registry_model.register()
-class mobilenet(BasicModule):
+class mobilenet(nn.Module):
     def __init__(self, num_classes=2):
         super(mobilenet, self).__init__()
         self.model_name = 'mobilenet'
@@ -62,7 +29,7 @@ class mobilenet(BasicModule):
 
 
 @registry_model.register()
-class efficientnet(BasicModule):
+class efficientnet(nn.Module):
     def __init__(self, net_type='efficientnet-b0', num_classes=2):
         super(efficientnet, self).__init__()
         self.model_name = 'EfficientNet'
@@ -85,10 +52,9 @@ class efficientnet(BasicModule):
 
 
 @registry_model.register()
-class resnext101_32x8d(BasicModule):
+class resnext101_32x8d(nn.Module):
     def __init__(self, num_classes=2):
         super(resnext101_32x8d, self).__init__()
-        self.model_name = 'resnext101_32x8d'
         net = torchvision.models.resnext101_32x8d(pretrained=config.is_pretrained, num_classes=1000)
         self.features = nn.Sequential(
             *list(net.children())[:-1],
@@ -107,8 +73,4 @@ if __name__ == '__main__':
     # x = torch.randn(1, 3, 224, 224)
     # y = net(x)
     # print(y.shape)
-
-    from pretrainedmodels.models import pnasnet5large as premodel
-
-    net = premodel(num_classes=1000, pretrained='imagenet')
-    print(net.last_linear)
+    pass

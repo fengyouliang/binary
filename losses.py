@@ -11,14 +11,14 @@ registry_loss = Registry('loss')
 @registry_loss.register()
 class FocalLoss(nn.Module):
 
-    def __init__(self, focusing_param=2, balance_param=0.25):
+    def __init__(self, focusing_param=2, balance_param=0.5):
         super(FocalLoss, self).__init__()
 
-        self.focusing_param = focusing_param
-        self.balance_param = balance_param
+        self.focusing_param = focusing_param  # gamma
+        self.balance_param = balance_param  # alpha
 
     def forward(self, output, target):
-        cross_entropy = F.cross_entropy(output, target)
+        # cross_entropy = F.cross_entropy(output, target)
         # cross_entropy_log = torch.log(cross_entropy)
         logpt = - F.cross_entropy(output, target)
         pt = torch.exp(logpt)

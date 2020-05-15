@@ -8,13 +8,13 @@ import config
 from MetricEval import ClassifierEvalBinary
 
 
-def adjust_lr(optimizer, iter, gamma=0.5, warm_up=3):
-    print(iter)
+def adjust_lr(optimizer, cur_epoch, gamma=0.5, warm_up=5):
+    cur_epoch += 1
     original_lr = config.lr
-    if iter < warm_up:
-        new_lr = original_lr * (iter + 1) / warm_up
+    if cur_epoch <= warm_up:
+        new_lr = original_lr * cur_epoch / warm_up
     else:
-        new_lr = original_lr * gamma * (1 + math.cos(iter / config.max_epoch * math.pi))
+        new_lr = original_lr * gamma * (1 + math.cos(cur_epoch / config.max_epoch * math.pi))
 
     for param_group in optimizer.param_groups:
         param_group['lr'] = new_lr
@@ -49,7 +49,8 @@ def get_data_count():
             count = len(os.listdir(f'{data_path}/{index}/{mode}'))
             print(index, mode, count)
 
-def get_FRN_metric(y_true, y_score):
+
+def get_FOR_metric(y_true, y_score):
     threshold = y_score[y_true == 0].min(axis=0)[0]
 
     true_ok_ng_score = y_score[y_true == 1][:, 0]
@@ -63,7 +64,7 @@ def get_FRN_metric(y_true, y_score):
         'true=ok@pred=not_ok': not_ok_length,
         'true=ok@pred=ok': true_ok_length - not_ok_length,
         'all_ok': true_ok_length,
-        'FNR': (true_ok_length - not_ok_length) / true_ok_length,
+        'FOR': (true_ok_length - not_ok_length) / true_ok_length,
     }
     return final_metric_dict
 
@@ -81,6 +82,23 @@ def get_AP_metric(y_true, y_score):
 
     return ok_val_ap, ng_val_ap, mAP
 
+
+def write_log(log_file_name, FOR, ACC, AP):
+    with open(f'./log/{log_file_name}', 'w', encoding='utf-8') as f:
+
+        f.writelines(f"model: {config.model['name']}\n")
+        f.writelines(f"lr: {str(config.lr)}\n")
+        f.writelines(f"momentum: {str(config.momentum)}\n")
+        f.writelines(f"weight_decay: {str(config.weight_decay)}\n")
+        f.writelines(f"batch_size: {str(config.batch_size)}\n")
+        f.writelines(f"criterion: {config.criterion}\n")
+
+        best_FNR_epoch = list(map(str, FOR))
+        best_acc_epoch = list(map(str, ACC))
+        best_ap_epoch = list(map(str, AP))
+        f.writelines(f"best FNR epoch: {' '.join(best_FNR_epoch)}\n")
+        f.writelines(f"best acc epoch: {' '.join(best_acc_epoch)}\n")
+        f.writelines(f"best ap epoch: {' '.join(best_ap_epoch)}\n")
 
 if __name__ == '__main__':
     get_data_count()
