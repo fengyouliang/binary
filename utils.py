@@ -3,9 +3,26 @@ import os
 import shutil
 
 import numpy as np
+import torch
 
 import config
 from MetricEval import ClassifierEvalBinary
+
+
+def load_model(pth, cuda_index):
+    """
+    一机多卡load
+    :return:
+    """
+    if cuda_index == -1:
+        # load to cpu
+        checkpoint = torch.load(config.test_pth, map_location=torch.device('cpu'))
+    else:
+        # load to cuda
+        checkpoint = torch.load(pth, map_location=lambda storage, loc: storage.cuda())
+
+    model = checkpoint.module
+    return model
 
 
 def adjust_lr(optimizer, cur_epoch, gamma=0.5, warm_up=5):
@@ -83,9 +100,8 @@ def get_AP_metric(y_true, y_score):
     return ok_val_ap, ng_val_ap, mAP
 
 
-def write_log(log_file_name, FOR, ACC, AP):
+def write_log(log_file_name, FOR, ACC, AP, names):
     with open(f'./log/{log_file_name}', 'w', encoding='utf-8') as f:
-
         f.writelines(f"model: {config.model['name']}\n")
         f.writelines(f"lr: {str(config.lr)}\n")
         f.writelines(f"momentum: {str(config.momentum)}\n")
@@ -99,6 +115,8 @@ def write_log(log_file_name, FOR, ACC, AP):
         f.writelines(f"best FNR epoch: {' '.join(best_FNR_epoch)}\n")
         f.writelines(f"best acc epoch: {' '.join(best_acc_epoch)}\n")
         f.writelines(f"best ap epoch: {' '.join(best_ap_epoch)}\n")
+        f.writelines('\n'.join(names))
+
 
 if __name__ == '__main__':
     get_data_count()

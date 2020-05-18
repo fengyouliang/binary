@@ -17,3 +17,6 @@ if not os.path.exists('./log'):
     os.makedirs('./log')
 if not os.path.exists('./json'):
     os.makedirs('./json')
+if not os.path.exists('./Grad_CAM'):
+    os.makedirs('./Grad_CAM')
+

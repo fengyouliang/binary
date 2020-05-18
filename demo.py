@@ -1,31 +1,21 @@
-import torchvision
-from torch import nn
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+model = nn.Sequential(
+    nn.Conv2d(1, 3, 3, 3, 0, bias=False)
+)
+# print(model)
 
-import config
+x = torch.randn(1, 1, 3, 3)
+y = model(x)
+y = y.reshape(y.size(1))
+print(y)
+prob = F.softmax(y, dim=0)  # .detach().data
+print(prob, sum(prob))
 
+target = [0, 1, 0]
 
-class mobile(nn.Module):
-    def __init__(self, num_classes=2):
-        super(mobile, self).__init__()
-        self.model_name = 'mobilenet'
+criterion = nn.NLLLoss2d()
 
-        net = torchvision.models.mobilenet_v2(pretrained=config.is_pretrained, num_classes=1000)
-
-        self.features = nn.Sequential(
-            *list(net.children())[:-1],
-        )
-        self.classifer = nn.Linear(1280, num_classes)
-
-    def forward(self, x):
-        x = self.features(x)
-        x = nn.functional.adaptive_avg_pool2d(x, 1).reshape(x.shape[0], -1)
-        x = self.classifer(x)
-        return x
-
-
-from models.model import mobilenet
-
-net = mobilenet()
-m = mobile()
-print(net.parameters())
-print(m.parameters())
+loss = criterion(prob, target)
+print(loss)

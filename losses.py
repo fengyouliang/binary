@@ -11,7 +11,7 @@ registry_loss = Registry('loss')
 @registry_loss.register()
 class FocalLoss(nn.Module):
 
-    def __init__(self, focusing_param=2, balance_param=0.5):
+    def __init__(self, focusing_param=4, balance_param=0.5):
         super(FocalLoss, self).__init__()
 
         self.focusing_param = focusing_param  # gamma

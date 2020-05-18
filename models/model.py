@@ -30,7 +30,7 @@ class mobilenet(nn.Module):
 
 @registry_model.register()
 class efficientnet(nn.Module):
-    def __init__(self, net_type='efficientnet-b0', num_classes=2):
+    def __init__(self, net_type='efficientnet-b7', num_classes=2):
         super(efficientnet, self).__init__()
         self.model_name = 'EfficientNet'
 

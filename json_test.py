@@ -11,7 +11,8 @@ from torchvision import transforms
 import config
 
 
-cpu = torch.device('cpu')
+# cpu = torch.device('cpu')
+
 cuda_index = 2
 available_cuda = torch.device(f'cuda:{cuda_index}')
 
@@ -97,6 +98,9 @@ def to_json(result_pred):
     for item in result_pred:
         image_path = item['image_path']
         image_name = os.path.basename(image_path).split('.')[0]
+        sp = image_name.split('_')
+        first, second = sp[:-2], sp[-1:]
+        image_name = '_'.join(first + second)
         y_true = item['y_true']
         class_dict_idx = 0 if y_true == 'ok' else 1
         ng_score = item['ng_score']

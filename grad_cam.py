@@ -2,12 +2,13 @@ import os
 
 import cv2 as cv
 import numpy as np
-import torch
 from PIL import Image
 from torch.nn import functional as F
 from torchvision import transforms
+from tqdm import tqdm
 
-from models.model import mobilenet
+import config
+import utils
 
 
 def get_cam(feature_conv, weight_softmax, class_idx):
@@ -25,12 +26,7 @@ def get_cam(feature_conv, weight_softmax, class_idx):
     return output_cam
 
 
-def grad_cam(image_path, pth, device=torch.device('cuda:2'), finalconv_name='features'):
-    model = mobilenet()
-    checkpoint = torch.load(pth, map_location=lambda storage, loc: storage)
-    model.load_state_dict(checkpoint)
-    model.to(device)
-
+def grad_cam(model, image_path, finalconv_name='features'):
     features_blobs = []
 
     def hook_feature(module, input, output):
@@ -49,7 +45,7 @@ def grad_cam(image_path, pth, device=torch.device('cuda:2'), finalconv_name='fea
         transforms.ToTensor(),
     ])
     x = tf(image)
-    x = x.to(device).unsqueeze(0)
+    x = x.to(config.device).unsqueeze(0)
 
     logit = model(x)
 
@@ -75,9 +71,6 @@ def grad_cam(image_path, pth, device=torch.device('cuda:2'), finalconv_name='fea
     result = heatmap * 0.3 + img * 0.5
 
     return result
-    basename = os.path.basename(image_path).split('.')[0]
-    imwrite_name = f'{output_path}/{basename}_grad_cam.jpg'
-    cv.imwrite(imwrite_name, result)
 
 
 def draw_grad_cam(image_path, result, mode='merge', output_path='./CAM'):
@@ -91,9 +84,23 @@ def draw_grad_cam(image_path, result, mode='merge', output_path='./CAM'):
         cv.imwrite(imwrite_name, image)
 
 
+def grad_cam_bad_case(fold_index):
+    model = utils.load_model(config.test_pth, config.cuda_available_index)
+    root_path = f'./vis_bad_case/fold_{fold_index}/'
+    modes = ['ok', 'ng']
+    for mode in modes:
+        test_path = f'{root_path}/{mode}'
+        bar = tqdm(os.listdir(test_path))
+        for file in bar:
+            bar.set_description(file)
+            image_path = f'{test_path}/{file}'
+            result = grad_cam(model, image_path)
+            draw_grad_cam(image_path, result, output_path=f'./Grad_CAM/test_{fold_index}/{mode}')
+
+
 if __name__ == '__main__':
     image_path = './examples/demo.jpg'
     pth = '/home/youliang/code/binary/best_FNR_model/31_acc_0.9443_mAP_0.9620500000000001_FNR0.5503.pth'
-    device = torch.device('cuda:2')
-    result = grad_cam(image_path, pth)
+    model = utils.load_model(pth, config.cuda_available_index)
+    result = grad_cam(model, image_path)
     draw_grad_cam(image_path, result, output_path='./examples')

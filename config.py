@@ -1,6 +1,8 @@
+import torch
+
 model = {
-    'name': 'resnext101_32x8d',
-    # 'name': 'mobilenet',
+    # 'name': 'resnext101_32x8d',
+    'name': 'mobilenet',
 }
 
 # first data path
@@ -11,8 +13,9 @@ model = {
 # test_path = '/mnt/tmp/feng/second_final_data/final_data_fold_1'
 
 # kuozhankuang data path
-data_path = '/mnt/tmp/feng/kuozhankuang/fold_1'
-test_path = '/mnt/tmp/feng/kuozhankuang/fold_1'
+data_fold_index = 1
+data_path = f'/mnt/tmp/feng/kuozhankuang/fold_{data_fold_index}'
+test_path = f'/mnt/tmp/feng/kuozhankuang/fold_{data_fold_index}'
 
 # resnext101_32x8d
 # test_pth = '0_acc_0.9717_ok_ap_0.9993_ng_ap_0.9526_mAP_0.97595.pth'  # 2个
@@ -28,7 +31,11 @@ test_path = '/mnt/tmp/feng/kuozhankuang/fold_1'
 # test_pth = './best_FNR_model/43_acc_0.9014_mAP_0.8955500000000001_FNR0.3427.pth'  # FocalLoss best FNR model
 
 test_pth = './checkpoints/resnext101_32x8d/19_acc_0.9860_mAP_0.9869_FOR_0.6171.pth'
+# test_pth = './checkpoints/mobilenet/25_acc_0.9794_mAP_0.98195_FOR_0.5641.pth'
 
+
+cuda_available_index = 0
+device = torch.device('cpu') if cuda_available_index == -1 else torch.device(f'cuda:{cuda_available_index}')
 device_ids = [0, 1]
 
 resize = (112, 224)
@@ -36,7 +43,7 @@ resize = (112, 224)
 train_keep = -1
 val_keep = -1
 
-batch_size = 128
+batch_size = 512
 
 is_pretrained = True
 
@@ -44,8 +51,8 @@ lr = 1e-4
 weight_decay = 1e-5
 momentum = 0.9
 
-# criterion = 'focalloss'
-criterion = 'crossentropyloss'
+criterion = 'focalloss'
+# criterion = 'crossentropyloss'
 
 optimizer = 'adam'
 

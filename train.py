@@ -22,6 +22,7 @@ def trainer(model, optimizer, criterion, scheduler, train_loader, val_loader, tq
     best_ap_epoch = []
     best_acc_epoch = []
     best_FOR_epoch = []
+    save_names = []
 
     for epoch in range(config.max_epoch):
         utils.adjust_lr(optimizer, epoch)
@@ -39,7 +40,7 @@ def trainer(model, optimizer, criterion, scheduler, train_loader, val_loader, tq
 
             cur_loss = loss.item()
             cur_lr = optimizer.state_dict()["param_groups"][0]["lr"]
-            bar.set_description(f'{epoch}-{ii} loss:{cur_loss:.4f} lr:{cur_lr:8.2e}')
+            bar.set_description(f'{epoch}-{ii} loss:{cur_loss:e} lr:{cur_lr:8.2e}')
 
         val_accuracy, y_true, y_score = val(model, val_loader)
         # confusion matrix
@@ -70,6 +71,7 @@ def trainer(model, optimizer, criterion, scheduler, train_loader, val_loader, tq
 
         save_path = f'./checkpoints/{config.model["name"]}'
         save_name = f'{epoch}_acc_{val_accuracy:.4f}_mAP_{mAP}_FOR_{final_metric_dict["FOR"]:.4F}.pth'
+        save_names.append(save_name)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
         torch.save(model, f'{save_path}/{save_name}')
@@ -91,7 +93,7 @@ def trainer(model, optimizer, criterion, scheduler, train_loader, val_loader, tq
 
     cur_time = time.strftime('%m%d_%H_%M')
     log_file_name = f"{config.model['name']}_{cur_time}.txt"
-    utils.write_log(log_file_name, best_FOR_epoch, best_acc_epoch, best_ap_epoch)
+    utils.write_log(log_file_name, best_FOR_epoch, best_acc_epoch, best_ap_epoch, save_names)
 
 
 

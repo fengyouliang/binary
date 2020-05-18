@@ -9,6 +9,7 @@ from torchvision import transforms
 from tqdm import tqdm
 
 import config
+import utils
 from models.model import registry_model
 
 
@@ -17,10 +18,11 @@ def cam(class_name, image_path, pth, device=torch.device('cuda:2'), num_classes=
         os.makedirs(output_dir)
 
     # model
-    model = registry_model.get(config.model['name'])()
-    checkpoint = torch.load(pth, map_location=lambda storage, loc: storage)
-    model.load_state_dict(checkpoint)
-    model.to(device)
+    # model = registry_model.get(config.model['name'])()
+    # checkpoint = torch.load(pth, map_location=lambda storage, loc: storage)
+    # model.load_state_dict(checkpoint)
+    # model.to(device)
+    model = utils.load_model(pth, config.cuda_available_index)
 
     # image
     image = Image.open(image_path).convert('RGB')
@@ -30,7 +32,7 @@ def cam(class_name, image_path, pth, device=torch.device('cuda:2'), num_classes=
         transforms.ToTensor(),
     ])
     x = tf(image)
-    x = x.to(device).unsqueeze(0)
+    x = x.to(config.device).unsqueeze(0)
 
     x = model.features(x)
     weight = model.classifer.weight.T

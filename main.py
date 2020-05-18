@@ -17,8 +17,8 @@ from train import trainer
 
 def train_loop():
     model = registry_model.get(config.model['name'])()
-    model = torch.nn.DataParallel(model, device_ids=config.device_ids)
-    model = model.cuda(device=config.device_ids[0])
+    model = torch.nn.DataParallel(model)
+    model = model.cuda()
 
     # optimizer = SGD(model.parameters(), lr=config.lr, momentum=config.momentum, weight_decay=config.weight_decay)
     optimizer = Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
@@ -36,11 +36,12 @@ def train_loop():
     ng_count = len(os.listdir(f"{config.data_path}/train/ng/"))
     weights = [1 / ok_count for i in range(ok_count)] + [1 / ng_count for i in range(ng_count)]
     sampler = WeightedRandomSampler(weights, len(train_data), True)
-    train_loader = DataLoader(train_data, batch_size=config.batch_size, sampler=sampler)
-    val_loader = DataLoader(val_data, batch_size=config.batch_size, shuffle=False)
+    train_loader = DataLoader(train_data, batch_size=config.batch_size, sampler=sampler, pin_memory=True)
+    val_loader = DataLoader(val_data, batch_size=config.batch_size, shuffle=False, pin_memory=True)
 
     trainer(model, optimizer, criterion, None, train_loader, val_loader, tqdm_length)
 
 
 if __name__ == '__main__':
+    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, config.device_ids))
     train_loop()

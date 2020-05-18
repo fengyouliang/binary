@@ -54,13 +54,6 @@ class Test_Dataset(Dataset):
         return img, label
 
 
-def load_model(pth):
-    model = registry_model.get(config.model['name'])()
-    model.load(pth)
-    model = model.cuda(device=config.device_ids[0])
-    return model
-
-
 @torch.no_grad()
 def final_test(model):
     model.eval()
@@ -195,8 +188,9 @@ def vis_bad_case(vis_bad_case, fold_idx):
 
 
 if __name__ == '__main__':
-    model = load_model(config.test_pth)
+    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, config.device_ids))
 
+    model = utils.load_model(config.test_pth, config.cuda_available_index)
     ret_dict = final_test(model)
     torch.cuda.empty_cache()
 
