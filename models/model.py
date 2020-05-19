@@ -1,9 +1,13 @@
+import torch
 import torchvision
 from efficientnet_pytorch import EfficientNet
 from torch import nn
 
 import config
+from models.danet import DANetHead
 from register import Registry
+
+from torchvision import models
 
 registry_model = Registry('model')
 
@@ -14,7 +18,7 @@ class mobilenet(nn.Module):
         super(mobilenet, self).__init__()
         self.model_name = 'mobilenet'
 
-        net = torchvision.models.mobilenet_v2(pretrained=config.is_pretrained, num_classes=1000)
+        net = models.mobilenet_v2(pretrained=config.is_pretrained, num_classes=1000)
 
         self.features = nn.Sequential(
             *list(net.children())[:-1],
@@ -55,11 +59,13 @@ class efficientnet(nn.Module):
 class resnext101_32x8d(nn.Module):
     def __init__(self, num_classes=2):
         super(resnext101_32x8d, self).__init__()
-        net = torchvision.models.resnext101_32x8d(pretrained=config.is_pretrained, num_classes=1000)
+        net = models.resnext101_32x8d(pretrained=config.is_pretrained, num_classes=1000)
         self.features = nn.Sequential(
-            *list(net.children())[:-1],
+            *list(net.children())[:-2],
         )
-        self.classifer = nn.Linear(2048, num_classes)
+        self.feature_channels = 2048
+        self.dan = DANetHead(self.feature_channels, self.feature_channels)
+        self.classifer = nn.Linear(self.feature_channels, num_classes)
 
     def forward(self, x):
         x = self.features(x)
@@ -68,9 +74,31 @@ class resnext101_32x8d(nn.Module):
         return x
 
 
+@registry_model.register()
+class DANet(nn.Module):
+    def __init__(self, num_classes=2):
+        super(DANet, self).__init__()
+        net = models.resnet18(pretrained=config.is_pretrained, num_classes=1000)
+        self.features = nn.Sequential(
+            *list(net.children())[:-2],
+        )
+        self.dan = DANetHead(512, 512)
+        self.classifer = nn.Linear(512, num_classes)
+
+    def forward(self, x):
+        x = self.features(x)
+        x = self.dan(x)
+        x = nn.functional.adaptive_avg_pool2d(x, 1).reshape(x.shape[0], -1)
+        x = self.classifer(x)
+        return x
+
+
 if __name__ == '__main__':
-    # net = registry_model.get('efficientnet')('efficientnet-b7')
-    # x = torch.randn(1, 3, 224, 224)
-    # y = net(x)
-    # print(y.shape)
-    pass
+    model = DANet()
+
+    bs = 4
+    x = torch.randn(bs, 3, 112, 224)
+    logits = model(x)
+    print(logits.shape)
+
+

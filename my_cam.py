@@ -10,7 +10,6 @@ from tqdm import tqdm
 
 import config
 import utils
-from models.model import registry_model
 
 
 def cam(class_name, image_path, pth, device=torch.device('cuda:2'), num_classes=2, output_dir='./CAM/'):

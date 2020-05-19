@@ -96,7 +96,6 @@ def trainer(model, optimizer, criterion, scheduler, train_loader, val_loader, tq
     utils.write_log(log_file_name, best_FOR_epoch, best_acc_epoch, best_ap_epoch, save_names)
 
 
-
 @torch.no_grad()
 def val(model, dataloader):
     model.eval()

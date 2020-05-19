@@ -74,7 +74,9 @@ def grad_cam(model, image_path, finalconv_name='features'):
 
 
 def draw_grad_cam(image_path, result, mode='merge', output_path='./CAM'):
-    basename = os.path.basename(image_path).split('.')[0]
+    basename = os.path.basename(image_path)[:-4]
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
     imwrite_name = f'{output_path}/{basename}_grad_cam.jpg'
     if mode == 'cam':
         cv.imwrite(imwrite_name, result)

@@ -19,4 +19,3 @@ if not os.path.exists('./json'):
     os.makedirs('./json')
 if not os.path.exists('./Grad_CAM'):
     os.makedirs('./Grad_CAM')
-

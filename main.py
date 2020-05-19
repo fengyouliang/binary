@@ -4,12 +4,13 @@ import math
 import os
 
 import torch
-from torch.optim import Adam
+from torch.optim import SGD, AdamW, Adam
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
 import config
 from dataset import MyDataset
+import losses
 from losses import registry_loss
 from models.model import registry_model
 from train import trainer
@@ -20,9 +21,12 @@ def train_loop():
     model = torch.nn.DataParallel(model)
     model = model.cuda()
 
-    # optimizer = SGD(model.parameters(), lr=config.lr, momentum=config.momentum, weight_decay=config.weight_decay)
-    optimizer = Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
+    # optimizer = SGD(model.parameters(), lr=config.lr)  # momentum=config.momentum, weight_decay=config.weight_decay
+    optimizer = Adam(model.parameters(), lr=config.lr)
+    # optimizer = AdamW(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
+
     criterion = registry_loss.get(config.criterion)()
+    # criterion = losses.FocalLoss_2(2)
 
     train_data = MyDataset('train')
     val_data = MyDataset('val')

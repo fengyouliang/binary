@@ -54,10 +54,11 @@ class MyDataset(Dataset):
             tf = transforms.Compose([
                 lambda x: Image.open(x),
                 transforms.Resize((int(self.resize[0]), int(self.resize[1]))),
-                # transforms.RandomRotation(15),
+                transforms.RandomRotation(45),
                 transforms.RandomHorizontalFlip(0.5),
                 transforms.RandomVerticalFlip(0.5),
                 transforms.ToTensor(),
+                # transforms.ColorJitter(brightness=1, contrast=1, hue=0.5),
                 # transforms.RandomErasing(),
             ])
         else:

@@ -12,7 +12,7 @@ from tqdm import tqdm
 import config
 import utils
 from MetricEval import ClassifierEvalBinary, ClassifierEvalMulticlass
-from models.model import registry_model
+from grad_cam import grad_cam_bad_case
 from my_cam import cam_bad_case
 
 
@@ -67,7 +67,8 @@ def final_test(model):
     all_pred = []  # y_score
 
     test_data = Test_Dataset()
-    test_loader = DataLoader(test_data, batch_size=len(test_data), shuffle=False)
+    test_batch_size = len(test_data) if config.test_batch_size == -1 else config.test_batch_size
+    test_loader = DataLoader(test_data, batch_size=test_batch_size, shuffle=False)
 
     image_name = test_data.pos_images + test_data.neg_images
     all_image_name = np.array(image_name, dtype=str)
@@ -95,7 +96,6 @@ def final_test(model):
     confusion_matrix = metrics.confusion_matrix(y_true, all_pred)
 
     final_metric_dict = utils.get_FOR_metric(y_true, y_score)
-
 
     # 按score 排序，分NG， OK
     ng_score = y_score[:, 0]
@@ -196,4 +196,5 @@ if __name__ == '__main__':
 
     print(ret_dict)
     vis_bad_case(ret_dict["vis_bad_case"], config.test_path[-1])
-    cam_bad_case()
+    grad_cam_bad_case(config.data_fold_index)
+    # cam_bad_case(output_type=config.data_fold_index)

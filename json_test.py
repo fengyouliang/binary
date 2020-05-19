@@ -1,6 +1,5 @@
 import json
 import os
-import time
 
 import numpy as np
 import torch
@@ -9,7 +8,6 @@ from torch import nn
 from torchvision import transforms
 
 import config
-
 
 # cpu = torch.device('cpu')
 
