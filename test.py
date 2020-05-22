@@ -12,8 +12,6 @@ from tqdm import tqdm
 import config
 import utils
 from MetricEval import ClassifierEvalBinary, ClassifierEvalMulticlass
-from grad_cam import grad_cam_bad_case
-from my_cam import cam_bad_case
 
 
 class Test_Dataset(Dataset):
@@ -187,14 +185,60 @@ def vis_bad_case(vis_bad_case, fold_idx):
             cv.imwrite(f'./vis_bad_case/fold_{fold_idx}/{mode}/{score[i]:6f}_{output_name}.jpg', image)
 
 
-if __name__ == '__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, config.device_ids))
+def draw_hist(ng_score, ok_score):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import matplotlib
 
-    model = utils.load_model(config.test_pth, config.cuda_available_index)
+    # ng = np.histogram(ng_score, bins=100, range=(0, 1))
+    # ok = np.histogram(ok_score, bins=100, range=(0, 1))
+    ok_score = 1 - ok_score
+    plt.hist(x=ng_score, bins=100, fc='r')
+    plt.hist(x=ok_score, bins=100, fc='b')
+
+    plt.legend()
+    plt.show()
+
+
+def efficientnet_test():
+    test_pth = './checkpoints/EfficientNet'
+    for file in os.listdir(test_pth):
+        pth = f'{test_pth}/{file}'
+        model = torch.load(pth)
+        model = model.module
+        model = model.cuda()
+        ret_dict = final_test(model)
+        torch.cuda.empty_cache()
+
+        ng_score = ret_dict["vis_bad_case"]['ng_score']
+        ok_score = ret_dict["vis_bad_case"]['ok_score']
+        thres = 1 - ng_score[2]
+        print(pth)
+        print(sum(ok_score > thres), len(ok_score), sum(ok_score > thres) / len(ok_score))
+
+
+if __name__ == '__main__':
+    device_ids = [3]
+    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, device_ids))
+
+    # model = utils.load_model(config.test_pth, -1)
+    model = torch.load(config.test_pth)
+    model = model.module
+    model = model.cuda()
     ret_dict = final_test(model)
     torch.cuda.empty_cache()
-
     print(ret_dict)
-    vis_bad_case(ret_dict["vis_bad_case"], config.test_path[-1])
-    grad_cam_bad_case(config.data_fold_index)
+
+    ng_score = ret_dict["vis_bad_case"]['ng_score']
+    ok_score = ret_dict["vis_bad_case"]['ok_score']
+    thres = 1 - ng_score[2]
+    print(sum(ok_score > thres), len(ok_score), sum(ok_score > thres) / len(ok_score))
+
+    draw_hist(ng_score, ok_score)
+
+    # vis_bad_case(ret_dict["vis_bad_case"], config.test_path[-1])
+
+    # grad_cam_bad_case(config.data_fold_index)
     # cam_bad_case(output_type=config.data_fold_index)
+
+    # efficientnet_test()

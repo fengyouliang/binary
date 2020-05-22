@@ -4,15 +4,14 @@
 # Copyright (c) 2018
 ###########################################################################
 from __future__ import division
-import os
-import numpy as np
-import torch
-import torch.nn as nn
-from torch.nn.functional import upsample, normalize
-from models.attention import PAM_Module
-from models.attention import CAM_Module
 
-__all__ = ['DANet', 'get_danet']
+import torch.nn as nn
+from torch.nn.functional import upsample
+
+from models.attention import CAM_Module
+from models.attention import PAM_Module
+
+__all__ = ['DANet', 'DANetHead']
 
 
 class DANet(nn.Module):
@@ -94,7 +93,6 @@ class DANetHead(nn.Module):
         sc_output = self.conv7(sc_conv)
 
         feat_sum = sa_conv + sc_conv
-
         sasc_output = self.conv8(feat_sum)
 
         # output = [sasc_output]
@@ -104,26 +102,3 @@ class DANetHead(nn.Module):
 
         out = sasc_output + sa_output + sc_output
         return out
-
-
-def get_danet(dataset='pascal_voc', backbone='resnet50', pretrained=False,
-              root='./pretrain_models', **kwargs):
-    r"""DANet model from the paper `"Dual Attention Network for Scene Segmentation"
-    <https://arxiv.org/abs/1809.02983.pdf>`
-    """
-    acronyms = {
-        'pascal_voc': 'voc',
-        'pascal_aug': 'voc',
-        'pcontext': 'pcontext',
-        'ade20k': 'ade',
-        'cityscapes': 'cityscapes',
-    }
-    # infer number of classes
-    from ..datasets import datasets, VOCSegmentation, VOCAugSegmentation, ADE20KSegmentation
-    model = DANet(datasets[dataset.lower()].NUM_CLASS, backbone=backbone, root=root, **kwargs)
-    if pretrained:
-        from .model_store import get_model_file
-        model.load_state_dict(torch.load(
-            get_model_file('fcn_%s_%s' % (backbone, acronyms[dataset]), root=root)),
-            strict=False)
-    return model

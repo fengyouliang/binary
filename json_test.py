@@ -9,10 +9,8 @@ from torchvision import transforms
 
 import config
 
-# cpu = torch.device('cpu')
-
 cuda_index = 2
-available_cuda = torch.device(f'cuda:{cuda_index}')
+available_cuda = torch.device('cpu') if cuda_index == -1 else torch.device(f'cuda:{cuda_index}')
 
 
 def result_test(model):

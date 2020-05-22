@@ -27,6 +27,8 @@ def trainer(model, optimizer, criterion, scheduler, train_loader, val_loader, tq
     for epoch in range(config.max_epoch):
         utils.adjust_lr(optimizer, epoch)
 
+        batch_avg_loss = 0
+
         bar = tqdm(enumerate(train_loader), total=tqdm_length)
         for ii, (data, label) in bar:
             input = data.cuda()
@@ -39,8 +41,10 @@ def trainer(model, optimizer, criterion, scheduler, train_loader, val_loader, tq
             optimizer.step()
 
             cur_loss = loss.item()
+            batch_avg_loss += cur_loss
             cur_lr = optimizer.state_dict()["param_groups"][0]["lr"]
-            bar.set_description(f'{epoch}-{ii} loss:{cur_loss:e} lr:{cur_lr:8.2e}')
+            batch_loss = batch_avg_loss / (ii + 1)
+            bar.set_description(f'{epoch} loss:{cur_loss:.2e} Bloss:{batch_loss:.2e} lr:{cur_lr:.2e}')
 
         val_accuracy, y_true, y_score = val(model, val_loader)
         # confusion matrix

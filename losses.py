@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable
 
 from register import Registry
 
@@ -270,6 +269,35 @@ class FocalLoss_2(nn.Module):
         loss = (1 - p) ** self.gamma * logp * target + p ** self.gamma * logp * (1 - target)
 
         return loss.mean()
+
+
+class FocalLoss(nn.Module):
+    """ cross entropy focal loss
+    https://www.kaggle.com/hmendonca/kaggle-pytorch-utility-script
+    """
+
+    def __init__(self, alpha=None, gamma=2., reduction='mean'):
+        super(FocalLoss, self).__init__()
+        self.alpha = torch.tensor(alpha) if alpha is not None else None
+        self.gamma = gamma
+        self.reduction = reduction
+
+    def forward(self, inputs, targets):
+        if self.alpha is not None:
+            self.alpha = self.alpha.type(inputs.type(), non_blocking=True)  # fix type and device
+            alpha = self.alpha[targets]
+        else:
+            alpha = 1.
+
+        CE_loss = F.cross_entropy(inputs, targets, reduction='none')
+        pt = torch.exp(-CE_loss)
+        F_loss = alpha * (1 - pt) ** self.gamma * CE_loss
+
+        if self.reduction == 'sum':
+            return F_loss.sum()
+        elif self.reduction == 'mean':
+            return F_loss.mean()
+        return F_loss
 
 
 @registry_loss.register()

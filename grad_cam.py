@@ -2,6 +2,7 @@ import os
 
 import cv2 as cv
 import numpy as np
+import torch
 from PIL import Image
 from torch.nn import functional as F
 from torchvision import transforms
@@ -45,7 +46,7 @@ def grad_cam(model, image_path, finalconv_name='features'):
         transforms.ToTensor(),
     ])
     x = tf(image)
-    x = x.to(config.device).unsqueeze(0)
+    x = x.to(torch.device('cuda:3')).unsqueeze(0)
 
     logit = model(x)
 
@@ -102,7 +103,8 @@ def grad_cam_bad_case(fold_index):
 
 if __name__ == '__main__':
     image_path = './examples/demo.jpg'
-    pth = '/home/youliang/code/binary/best_FNR_model/31_acc_0.9443_mAP_0.9620500000000001_FNR0.5503.pth'
-    model = utils.load_model(pth, config.cuda_available_index)
+    pth = '/home/youliang/code/binary/checkpoints/resnext101_32x8d/29_acc_0.9856_mAP_0.98865_FOR_0.4288.pth'
+    checkpoint = torch.load(pth, map_location=torch.device('cuda:3'))
+    model = checkpoint.module
     result = grad_cam(model, image_path)
     draw_grad_cam(image_path, result, output_path='./examples')
