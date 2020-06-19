@@ -100,7 +100,6 @@ class MBConvBlock(nn.Module):
         self._swish = MemoryEfficientSwish() if memory_efficient else Swish()
 
 
-# @registry_model.register()
 class EfficientNet(nn.Module):
     """
     An EfficientNet model. Most easily loaded with the .from_name or .from_pretrained methods
@@ -238,7 +237,7 @@ class EfficientNet(nn.Module):
 
 
 if __name__ == '__main__':
-    model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=2).cuda(3)
+    model = EfficientNet.from_pretrained('efficientnet-b7', num_classes=2).cuda(3)
     print(model)
     x = torch.randn(1, 3, 224, 224).cuda(3)
     logits = model(x)

@@ -71,12 +71,11 @@ def demo():
     model_list = []
     pths = [
         './checkpoints/EfficientNet/28_acc_0.9769_mAP_0.978_FOR_0.2415.pth',  # 0.5656565656565656 0.5909090909090909
-        './checkpoints/mobilenet/20_acc_0.9806_mAP_0.9823999999999999_FOR_0.5975.pth',  # 0.17676767676767677 0.6111111111111112
+        # './checkpoints/mobilenet/20_acc_0.9806_mAP_0.9823999999999999_FOR_0.5975.pth',  # 0.17676767676767677 0.6111111111111112
         './checkpoints/resnext101_32x8d/28_acc_0.9891_mAP_0.9919_FOR_0.1761.pth',  # 0.4696969696969697 0.5505050505050505
         './checkpoints/mobilenet/21_acc_0.9037_mAP_0.8948499999999999_FOR_0.3932.pth',  # 0.4292929292929293 0.48484848484848486
         # './checkpoints/mobilenet/12_acc_0.9461_mAP_0.951_FOR_0.4693.pth',  # 0.06565656565656566 0.35353535353535354
         # './checkpoints/mobilenet/19_acc_0.9806_mAP_0.98035_FOR_0.5821.pth',  # 0.03535353535353535 0.2828282828282828
-
     ]
     for pth in pths:
         model = torch.load(pth)
@@ -95,3 +94,5 @@ def demo():
 if __name__ == '__main__':
     # thres = 1.4583e-07
     demo()
+
+    # [0, 1, 2, 3]:  0.5353535353535354 0.6363636363636364

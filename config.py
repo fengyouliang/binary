@@ -1,25 +1,23 @@
-import torch
-
 model = {
     # 'name': 'resnext101_32x8d',
     # 'name': 'mobilenet',
-    # 'name': 'EfficientNet',
-    # 'name': 'efficientnet_da'
-    'name': 'mobilenet_da'
+    'name': 'efficientnet',
+    # 'name': 'efficientnet_da',
+    # 'name': 'mobilenet_da',
+    # 'name': 'mobilenet_da',
 }
-batch_size = 512
-test_batch_size = 256
+device_ids = [0]
 
-lr = 1e-5
+num_class = 8
+batch_size = 32 * len(device_ids)
+test_batch_size = batch_size * 2
+
+lr = 1e-4
 weight_decay = 1e-5
 momentum = 0.9
 
-resize = (112, 224)
-# resize = (200, 500)
+resize = [224, 224]
 
-# cuda_available_index = 0
-# device = torch.device('cpu') if cuda_available_index == -1 else torch.device(f'cuda:{cuda_available_index}')
-device_ids = [0, 1]
 
 train_keep = -1
 val_keep = -1
@@ -63,5 +61,5 @@ test_path = f'/mnt/tmp/feng/kuozhankuang/fold_{data_fold_index}'
 # test_pth = './best_FNR_model/43_acc_0.9014_mAP_0.8955500000000001_FNR0.3427.pth'  # FocalLoss best FNR model
 
 # test_pth = './checkpoints/resnext101_32x8d/28_acc_0.9891_mAP_0.9919_FOR_0.1761.pth'
-test_pth = './checkpoints/EfficientNet/28_acc_0.9769_mAP_0.978_FOR_0.2415.pth'
-# test_pth = './checkpoints/mobilenet/20_acc_0.9806_mAP_0.9823999999999999_FOR_0.5975.pth'
+# test_pth = './checkpoints/EfficientNet/28_acc_0.9769_mAP_0.978_FOR_0.2415.pth'
+test_pth = './checkpoints/mobilenet/20_acc_0.9806_mAP_0.9823999999999999_FOR_0.5975.pth'

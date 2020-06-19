@@ -4,7 +4,7 @@ import math
 import os
 
 import torch
-from torch.optim import Adam
+from torch.optim import Adam, lr_scheduler
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
@@ -17,7 +17,6 @@ from train import trainer
 
 def train_loop():
     model = registry_model.get(config.model['name'])()
-    # model = EfficientNet.from_pretrained('efficientnet-b7', num_classes=2)
     model = torch.nn.DataParallel(model)
     model = model.to(torch.device('cuda'))
     print(model)
@@ -27,6 +26,7 @@ def train_loop():
     # optimizer = AdamW(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
 
     criterion = registry_loss.get(config.criterion)()
+    step_scheduler = lr_scheduler.StepLR(optimizer, 8, gamma=0.1, last_epoch=-1)
 
     train_data = MyDataset('train')
     val_data = MyDataset('val')
@@ -43,7 +43,7 @@ def train_loop():
     train_loader = DataLoader(train_data, batch_size=config.batch_size, sampler=sampler, pin_memory=True)
     val_loader = DataLoader(val_data, batch_size=config.batch_size, shuffle=False, pin_memory=True)
 
-    trainer(model, optimizer, criterion, None, train_loader, val_loader, tqdm_length)
+    trainer(model, optimizer, criterion, step_scheduler, train_loader, val_loader, tqdm_length)
 
 
 if __name__ == '__main__':
